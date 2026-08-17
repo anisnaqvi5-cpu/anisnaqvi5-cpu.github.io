@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #faf7f2;
+  --color-surface: #ffffff;
+  --color-foreground: #1f2420;
+  --color-muted: #6b7268;
+  --color-primary: #7a9471;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #c97c5d;
+  --color-accent-foreground: #ffffff;
+  --color-border: #e7e1d6;
+  --color-success: #6a9b7a;
+  --color-danger: #c15f4e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #151815;
+    --color-surface: #1e2320;
+    --color-foreground: #f2efe9;
+    --color-muted: #9aa39a;
+    --color-primary: #8fb086;
+    --color-primary-foreground: #10140f;
+    --color-accent: #d99377;
+    --color-accent-foreground: #1f120b;
+    --color-border: #2c322c;
+    --color-success: #7fb98d;
+    --color-danger: #d97b68;
+  }
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html,
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+body {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(0.85); opacity: 0.75; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
