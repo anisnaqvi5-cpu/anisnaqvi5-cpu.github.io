@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Droplets, Dumbbell, Home, LineChart, NotebookPen, Wind } from "lucide-react";
 import { NotificationBell } from "@/components/wellness/Notifications/NotificationBell";
+import { LanguageToggle } from "@/components/wellness/Nav/LanguageToggle";
 
 const NAV_ITEMS = [
   { href: "/wellness", label: "Dashboard", icon: Home },
@@ -23,7 +24,10 @@ export function WellnessNav() {
         <Link href="/wellness" className="font-heading text-lg text-foreground">
           Wellness
         </Link>
-        <NotificationBell />
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <NotificationBell />
+        </div>
       </header>
 
       {/* Mobile bottom tab bar */}

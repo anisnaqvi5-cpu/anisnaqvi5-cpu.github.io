@@ -15,7 +15,7 @@ import type {
   WorkoutLog,
 } from "@/lib/types";
 import { generateFitnessPlan } from "@/lib/wellness/planGenerator";
-import { WORKOUT_CATALOG } from "@/lib/wellness/seedData";
+import { WORKOUT_CATALOG, type AppLocale } from "@/lib/wellness/seedData";
 
 // -----------------------------------------------------------------------------
 // This store is the browser-local, offline-first data layer for the wellness
@@ -28,6 +28,12 @@ import { WORKOUT_CATALOG } from "@/lib/wellness/seedData";
 // -----------------------------------------------------------------------------
 
 interface WellnessState {
+  // Language — English is the app's primary/default language; Arabic is the
+  // only supported secondary language. Scripts are never mixed within a
+  // single string (see WELLNESS_FEATURES.md's note on this).
+  locale: AppLocale;
+  setLocale: (locale: AppLocale) => void;
+
   // Fitness
   fitnessProfile: FitnessProfile | null;
   fitnessPlans: FitnessPlan[];
@@ -78,6 +84,9 @@ const DEFAULT_HYDRATION_GOAL: HydrationGoal = {
 export const useWellnessStore = create<WellnessState>()(
   persist(
     (set, get) => ({
+      locale: "en",
+      setLocale: (locale) => set({ locale }),
+
       fitnessProfile: null,
       fitnessPlans: [],
       workoutLogs: [],

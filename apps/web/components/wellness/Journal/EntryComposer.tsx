@@ -7,6 +7,12 @@ import { Card } from "@/components/wellness/ui/Card";
 import { useWellnessStore } from "@/lib/store";
 import type { Mood } from "@/lib/types";
 import { todaysPrompt } from "@/lib/wellness/seedData";
+import type { AppLocale } from "@/lib/wellness/seedData";
+
+const REFLECT_FALLBACK: Record<AppLocale, string> = {
+  en: "Reflect on this day",
+  ar: "تأمل في هذا اليوم",
+};
 
 const MOOD_OPTIONS: { value: Mood; emoji: string; label: string }[] = [
   { value: "great", emoji: "😄", label: "Great" },
@@ -17,6 +23,7 @@ const MOOD_OPTIONS: { value: Mood; emoji: string; label: string }[] = [
 ];
 
 export function EntryComposer({ date }: { date: string }) {
+  const locale = useWellnessStore((s) => s.locale);
   const entries = useWellnessStore((s) => s.gratitudeEntries);
   const upsertEntry = useWellnessStore((s) => s.upsertGratitudeEntry);
   const existing = entries.find((e) => e.entryDate === date);
@@ -28,7 +35,7 @@ export function EntryComposer({ date }: { date: string }) {
   const [mood, setMood] = useState<Mood>(existing?.mood ?? "good");
   const [saved, setSaved] = useState(false);
 
-  const prompt = existing?.prompt ?? (isToday ? todaysPrompt() : "اس دن کے بارے میں سوچیں");
+  const prompt = existing?.prompt ?? (isToday ? todaysPrompt(locale) : REFLECT_FALLBACK[locale]);
 
   useEffect(() => {
     setItems(existing?.gratitudeItems ?? []);

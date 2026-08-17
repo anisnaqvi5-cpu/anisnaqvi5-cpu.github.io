@@ -9,16 +9,23 @@ import { QuickLogRow } from "@/components/wellness/Dashboard/QuickLogRow";
 import { TodayPlanCard } from "@/components/wellness/Dashboard/TodayPlanCard";
 import { getActivePlan, useWellnessStore } from "@/lib/store";
 import { computeDailyGoals } from "@/lib/wellness/dailyGoals";
-import { WORKOUT_CATALOG } from "@/lib/wellness/seedData";
+import { WORKOUT_CATALOG, type AppLocale } from "@/lib/wellness/seedData";
 
-function greeting(): string {
+const GREETINGS: Record<AppLocale, [string, string, string]> = {
+  en: ["Good morning", "Good afternoon", "Good evening"],
+  ar: ["صباح الخير", "طاب يومك", "مساء الخير"],
+};
+
+function greeting(locale: AppLocale): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "صبح بخیر";
-  if (hour < 17) return "دن اچھا گزرے";
-  return "شام بخیر";
+  const [morning, afternoon, evening] = GREETINGS[locale];
+  if (hour < 12) return morning;
+  if (hour < 17) return afternoon;
+  return evening;
 }
 
 function DashboardContent() {
+  const locale = useWellnessStore((s) => s.locale);
   const hydrationGoal = useWellnessStore((s) => s.hydrationGoal);
   const hydrationLogs = useWellnessStore((s) => s.hydrationLogs);
   const workoutLogs = useWellnessStore((s) => s.workoutLogs);
@@ -39,7 +46,7 @@ function DashboardContent() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 dir="auto" className="font-heading text-2xl text-foreground">{greeting()} 🌿</h1>
+        <h1 dir="auto" className="font-heading text-2xl text-foreground">{greeting(locale)} 🌿</h1>
         <p className="text-sm text-muted">Here&apos;s your wellness snapshot for today.</p>
       </div>
 

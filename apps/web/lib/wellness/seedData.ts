@@ -148,19 +148,34 @@ export const MINDFULNESS_CATALOG: MindfulnessSession[] = [
 ];
 
 // Admin-curated prompt library (production: content_management screen).
+// English is the app's primary language; Arabic is offered as the only
+// secondary language (no Urdu, and never mixed within a single string).
 export const GRATITUDE_PROMPTS: string[] = [
-  "آج آپ کس چیز کے لیے شکر گزار ہیں؟",
-  "کسی نے آج آپ کی مدد کی — کون تھا؟",
-  "آج کا وہ لمحہ جو آپ کو مسکرا گیا۔",
-  "آپ کے جسم کی کونسی صلاحیت پر آپ شکر گزار ہیں؟",
-  "کوئی چھوٹی سی خوشی جو آج ملی۔",
-  "آپ کی زندگی میں کونسا رشتہ آپ کے لیے قیمتی ہے؟",
-  "آج آپ نے خود کے لیے کیا اچھا کیا؟",
+  "What are you grateful for today?",
+  "Someone helped you today — who was it?",
+  "A moment today that made you smile.",
+  "Which ability of your body are you grateful for?",
+  "A small joy you found today.",
+  "Which relationship in your life do you treasure most?",
+  "What did you do for yourself today?",
 ];
 
-export function todaysPrompt(): string {
-  const dayIndex = new Date().getDate() % GRATITUDE_PROMPTS.length;
-  return GRATITUDE_PROMPTS[dayIndex];
+export const GRATITUDE_PROMPTS_AR: string[] = [
+  "ما الذي تشعر بالامتنان له اليوم؟",
+  "من ساعدك اليوم؟",
+  "لحظة اليوم التي أسعدتك.",
+  "لأي قدرة في جسدك تشعر بالامتنان؟",
+  "سعادة صغيرة وجدتها اليوم.",
+  "ما العلاقة الأغلى في حياتك؟",
+  "ماذا فعلت لنفسك اليوم؟",
+];
+
+export type AppLocale = "en" | "ar";
+
+export function todaysPrompt(locale: AppLocale = "en"): string {
+  const list = locale === "ar" ? GRATITUDE_PROMPTS_AR : GRATITUDE_PROMPTS;
+  const dayIndex = new Date().getDate() % list.length;
+  return list[dayIndex];
 }
 
 export const DEFAULT_GRATITUDE_ITEMS: GratitudeEntry["gratitudeItems"] = [];
