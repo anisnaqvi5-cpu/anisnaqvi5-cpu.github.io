@@ -1,7 +1,9 @@
 # Wellness Web App
 
 Next.js implementation of the wellness modules described in `../../WELLNESS_FEATURES.md`,
-`../../ARCHITECTURE.md`, `../../UI_UX_SPECIFICATION.md` and `../../DATABASE_SCHEMA.md`.
+and the e-commerce system described in `../../ECOMMERCE_SYSTEM.md`, both built on
+`../../ARCHITECTURE.md`, `../../UI_UX_SPECIFICATION.md`, `../../DATABASE_SCHEMA.md`, and
+`../../CUSTOMIZATION_STUDIO.md`.
 
 ## Run locally
 
@@ -11,7 +13,21 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000 — it redirects to `/wellness` (the dashboard).
+Open http://localhost:3000 — it redirects to `/wellness` (the dashboard). The shop lives at
+`/shop`, admin order management at `/admin` (passcode `wellness-admin-demo` or `ADMIN_PASSCODE`).
+
+## E-commerce system (`/shop`, `/admin`, `/api/**`)
+
+See `../../ECOMMERCE_SYSTEM.md` for the full design. Summary: catalog/cart/wishlist/design-drafts
+are client-local (`lib/shopStore.ts`), exactly like the wellness pattern — but **orders and
+payments are server-authoritative** (`lib/server/*`, JSON-file-backed instead of Postgres, for
+the same zero-infrastructure reason as the wellness store, but genuinely server-side so a Stripe
+webhook can reach it). Personalized cart items carry a `designId`; the server freezes the exact
+design into an immutable `order_items.designSnapshot` at order time — never just a product ID.
+Payments run through a `PaymentProvider` interface (`lib/server/paymentProvider.ts`): a demo
+`MockPaymentProvider` by default (simulate success/decline, no external account needed), or a
+real `StripePaymentProvider` the moment `STRIPE_SECRET_KEY` is set — both paths funnel into the
+same idempotent `applyPaymentEvent()`, so order-status logic is identical either way.
 
 ## What's implemented
 

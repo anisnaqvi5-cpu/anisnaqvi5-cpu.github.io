@@ -5,6 +5,7 @@ import { DashboardSkeleton } from "@/components/wellness/ui/DashboardSkeleton";
 import { HydrationRing } from "@/components/wellness/Hydration/HydrationRing";
 import { HydrationSettings } from "@/components/wellness/Hydration/HydrationSettings";
 import { HydrationHistory } from "@/components/wellness/Hydration/HydrationHistory";
+import { HydrationBottleCrossSell } from "@/components/wellness/Hydration/HydrationBottleCrossSell";
 
 function HydrationContent() {
   return (
@@ -14,6 +15,7 @@ function HydrationContent() {
         <p className="text-sm text-muted">Track your water intake, set a goal, and turn on reminders.</p>
       </div>
       <HydrationRing />
+      <HydrationBottleCrossSell />
       <HydrationSettings />
       <HydrationHistory />
     </div>
