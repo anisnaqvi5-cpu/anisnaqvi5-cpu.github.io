@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createReview, listReviews } from "@/lib/server/orderService";
 import { getCustomerId, errorResponse } from "@/lib/server/http";
+import { rateLimitOrNull } from "@/lib/server/rateLimit";
+import { reviewCreateSchema } from "@/lib/server/validation";
 
 export async function GET(req: Request) {
   try {
@@ -14,9 +16,12 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const limited = rateLimitOrNull(req, { key: "review-create", limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const customerId = getCustomerId(req);
-    const body = (await req.json()) as { productId: string; orderItemId: string; rating: 1 | 2 | 3 | 4 | 5; comment: string };
+    const body = reviewCreateSchema.parse(await req.json());
     const review = await createReview({ ...body, customerId });
     return NextResponse.json({ review });
   } catch (err) {

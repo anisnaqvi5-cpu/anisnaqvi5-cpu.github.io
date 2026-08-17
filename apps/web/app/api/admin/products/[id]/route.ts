@@ -3,12 +3,12 @@ import { requireAdmin } from "@/lib/server/adminAuth";
 import { errorResponse } from "@/lib/server/http";
 import { logAudit } from "@/lib/server/auditLog";
 import { deleteProduct, updateProduct } from "@/lib/server/catalogService";
-import type { Product } from "@/lib/ecommerce/types";
+import { productUpdateSchema } from "@/lib/server/validation";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const admin = requireAdmin("products");
-    const patch = (await req.json()) as Partial<Product>;
+    const patch = productUpdateSchema.parse(await req.json());
     const product = await updateProduct(params.id, patch);
     await logAudit(admin, "product.update", "product", params.id, Object.keys(patch).join(", "));
     return NextResponse.json({ product });

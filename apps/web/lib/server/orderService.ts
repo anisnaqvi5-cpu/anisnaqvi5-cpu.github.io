@@ -11,7 +11,7 @@ import type {
   Review,
   ReturnRequest,
 } from "@/lib/ecommerce/types";
-import { withDb, readDb } from "@/lib/server/db";
+import { withDb, readDb, type DbShape } from "@/lib/server/db";
 import { OrderError } from "@/lib/server/errors";
 import { getPaymentProvider, type NormalizedWebhookEvent } from "@/lib/server/paymentProvider";
 
@@ -93,6 +93,11 @@ export async function createOrder(params: {
       if (variant.stockQty < item.quantity) {
         throw new OrderError("out_of_stock", `"${product.title.en}" (${variant.label}) has only ${variant.stockQty} left in stock.`);
       }
+
+      // Reserved immediately, in the same transaction as the stock check
+      // above, so two concurrent orders can never both succeed against the
+      // same last unit — restocked on cancellation/refund below.
+      variant.stockQty -= item.quantity;
 
       if (product.isPersonalizable && !item.design) {
         throw new OrderError("design_required", `"${product.title.en}" requires a personalization design before it can be ordered.`);
@@ -218,6 +223,17 @@ export async function applyPaymentEvent(event: NormalizedWebhookEvent): Promise<
 
 const CANCELLABLE_STATUSES: OrderStatus[] = ["pending_payment", "paid"];
 
+/** Returns reserved units to the catalog — called whenever an order that
+ * previously decremented stock (at creation, see createOrder) ends up not
+ * fulfilled, so inventory numbers stay accurate. */
+function restockOrderItems(db: DbShape, orderId: string): void {
+  for (const item of db.orderItems.filter((i) => i.orderId === orderId)) {
+    const product = db.products.find((p) => p.id === item.productId);
+    const variant = product?.variants.find((v) => v.id === item.variantId);
+    if (variant) variant.stockQty += item.quantity;
+  }
+}
+
 export async function cancelOrder(orderId: string, customerId: string): Promise<OrderRecord> {
   return withDb((db) => {
     const order = db.orders.find((o) => o.id === orderId && o.customerId === customerId);
@@ -228,6 +244,7 @@ export async function cancelOrder(orderId: string, customerId: string): Promise<
     order.status = "cancelled";
     order.statusHistory.push({ status: "cancelled", note: "Cancelled by customer", at: now() });
     order.updatedAt = now();
+    restockOrderItems(db, order.id);
     return order;
   });
 }
@@ -376,6 +393,7 @@ export async function adminRefundOrder(orderId: string): Promise<OrderRecord> {
     fresh.status = "refunded";
     fresh.statusHistory.push({ status: "refunded", note: "Refunded by admin", at: now() });
     fresh.updatedAt = now();
+    restockOrderItems(db, fresh.id);
     return fresh;
   });
 }

@@ -3,22 +3,24 @@ import { NextResponse } from "next/server";
 import { applyPaymentEvent } from "@/lib/server/orderService";
 import { errorResponse } from "@/lib/server/http";
 import { getPaymentProvider } from "@/lib/server/paymentProvider";
+import { rateLimitOrNull } from "@/lib/server/rateLimit";
+import { simulatePaymentSchema } from "@/lib/server/validation";
 
 // Demo-only stand-in for a real Stripe payment confirmation + webhook
 // delivery. Only available when no real Stripe keys are configured — once
 // STRIPE_SECRET_KEY is set, this route refuses and the client instead uses
 // Stripe.js + the real /api/webhooks/stripe route (see ECOMMERCE_SYSTEM.md).
 export async function POST(req: Request) {
+  const limited = rateLimitOrNull(req, { key: "simulate-payment", limit: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const provider = getPaymentProvider();
     if (provider.name !== "mock") {
       return NextResponse.json({ error: "not_mock_mode", message: "A real payment provider is configured; use Stripe.js instead." }, { status: 400 });
     }
 
-    const { paymentIntentId, outcome } = (await req.json()) as { paymentIntentId: string; outcome: "succeed" | "decline" };
-    if (!paymentIntentId || !outcome) {
-      return NextResponse.json({ error: "invalid_request", message: "paymentIntentId and outcome are required." }, { status: 400 });
-    }
+    const { paymentIntentId, outcome } = simulatePaymentSchema.parse(await req.json());
 
     await applyPaymentEvent(
       outcome === "succeed"

@@ -36,7 +36,7 @@ export interface GratitudePromptRecord {
   isActive: boolean;
 }
 
-interface DbShape {
+export interface DbShape {
   // Commerce (existing)
   orders: OrderRecord[];
   orderItems: OrderItemRecord[];

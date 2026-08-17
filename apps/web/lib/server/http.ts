@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { OrderError } from "@/lib/server/errors";
 import { AdminAuthError } from "@/lib/server/adminAuth";
+import { logger } from "@/lib/server/logger";
 
 export function getCustomerId(req: Request): string {
   const id = req.headers.get("x-customer-id");
@@ -34,7 +36,12 @@ export function errorResponse(err: unknown) {
   if (err instanceof OrderError) {
     return NextResponse.json({ error: err.code, message: err.message }, { status: statusForCode(err.code) });
   }
-  // eslint-disable-next-line no-console
-  console.error(err);
+  if (err instanceof ZodError) {
+    return NextResponse.json(
+      { error: "invalid_request", message: "Request failed validation.", issues: err.issues.map((i) => ({ path: i.path.join("."), message: i.message })) },
+      { status: 400 }
+    );
+  }
+  logger.error("unhandled_api_error", { error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
   return NextResponse.json({ error: "internal_error", message: "Something went wrong." }, { status: 500 });
 }

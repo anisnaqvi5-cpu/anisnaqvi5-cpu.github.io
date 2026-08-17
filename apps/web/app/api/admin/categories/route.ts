@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/server/adminAuth";
 import { errorResponse } from "@/lib/server/http";
 import { logAudit } from "@/lib/server/auditLog";
 import { createCategory, listCategories } from "@/lib/server/catalogService";
-import type { Category } from "@/lib/ecommerce/types";
+import { categoryCreateSchema } from "@/lib/server/validation";
 
 export async function GET() {
   try {
@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const admin = requireAdmin("categories");
-    const body = (await req.json()) as Omit<Category, "id">;
+    const body = categoryCreateSchema.parse(await req.json());
     const category = await createCategory(body);
     await logAudit(admin, "category.create", "category", category.id, category.name.en);
     return NextResponse.json({ category });
