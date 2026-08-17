@@ -53,6 +53,12 @@ export function ReviewsSection({ productId }: { productId: string }) {
     <div className="flex flex-col gap-4">
       <h2 className="font-heading text-lg text-foreground">Reviews</h2>
 
+      {submitted && (
+        <p className="rounded-card border border-primary/30 bg-primary/5 p-3 text-sm text-primary">
+          Thanks! Your review was submitted and is pending moderation before it appears here.
+        </p>
+      )}
+
       {reviewableItem && !submitted && (
         <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-4">
           <p className="text-sm text-foreground">You bought this — leave a review</p>

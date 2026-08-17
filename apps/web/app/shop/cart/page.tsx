@@ -7,13 +7,16 @@ import { ClientOnly } from "@/components/wellness/ui/ClientOnly";
 import { DashboardSkeleton } from "@/components/wellness/ui/DashboardSkeleton";
 import { EmptyState } from "@/components/wellness/ui/EmptyState";
 import { Card } from "@/components/wellness/ui/Card";
-import { findVariant } from "@/lib/ecommerce/catalog";
+import { findVariantInList } from "@/lib/ecommerce/lookup";
 import { formatCents } from "@/lib/ecommerce/format";
 import { useShopStore, getDesign } from "@/lib/shopStore";
 import { shopApi } from "@/lib/shopApi";
+import { useCatalogStore, useEnsureCatalog } from "@/lib/useCatalogStore";
 import type { OrderItemInput } from "@/lib/ecommerce/types";
 
 function CartContent() {
+  useEnsureCatalog();
+  const products = useCatalogStore((s) => s.products);
   const cartItems = useShopStore((s) => s.cartItems);
   const designs = useShopStore((s) => s.designs);
   const updateQuantity = useShopStore((s) => s.updateQuantity);
@@ -25,7 +28,7 @@ function CartContent() {
 
   const items: OrderItemInput[] = [];
   for (const c of cartItems) {
-    const found = findVariant(c.productId, c.variantId);
+    const found = findVariantInList(products, c.productId, c.variantId);
     if (!found) continue;
     const design = getDesign(designs, c.designId);
     items.push({ variantId: c.variantId, quantity: c.quantity, design: design ? { productId: c.productId, elements: design.elements } : undefined });
@@ -62,7 +65,7 @@ function CartContent() {
         <>
           <div className="flex flex-col gap-3">
             {cartItems.map((c) => {
-              const found = findVariant(c.productId, c.variantId);
+              const found = findVariantInList(products, c.productId, c.variantId);
               if (!found) return null;
               const design = getDesign(designs, c.designId);
               const unitPrice = found.product.basePriceCents + found.variant.priceDeltaCents;

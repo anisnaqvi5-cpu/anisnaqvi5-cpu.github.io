@@ -5,12 +5,14 @@ import { ClientOnly } from "@/components/wellness/ui/ClientOnly";
 import { DashboardSkeleton } from "@/components/wellness/ui/DashboardSkeleton";
 import { EmptyState } from "@/components/wellness/ui/EmptyState";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { PRODUCTS } from "@/lib/ecommerce/catalog";
+import { useCatalogStore, useEnsureCatalog } from "@/lib/useCatalogStore";
 import { useShopStore } from "@/lib/shopStore";
 
 function WishlistContent() {
+  useEnsureCatalog();
+  const catalogProducts = useCatalogStore((s) => s.products);
   const wishlist = useShopStore((s) => s.wishlist);
-  const products = wishlist.map((w) => PRODUCTS.find((p) => p.id === w.productId)).filter((p): p is (typeof PRODUCTS)[number] => Boolean(p));
+  const products = wishlist.map((w) => catalogProducts.find((p) => p.id === w.productId)).filter((p): p is (typeof catalogProducts)[number] => Boolean(p));
 
   return (
     <div className="flex flex-col gap-5">

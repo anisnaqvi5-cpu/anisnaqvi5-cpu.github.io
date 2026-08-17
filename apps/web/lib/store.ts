@@ -12,6 +12,7 @@ import type {
   MindfulnessLog,
   Mood,
   NotificationType,
+  Workout,
   WorkoutLog,
 } from "@/lib/types";
 import { generateFitnessPlan } from "@/lib/wellness/planGenerator";
@@ -38,7 +39,7 @@ interface WellnessState {
   fitnessProfile: FitnessProfile | null;
   fitnessPlans: FitnessPlan[];
   workoutLogs: WorkoutLog[];
-  setFitnessProfileAndGeneratePlan: (profile: FitnessProfile) => void;
+  setFitnessProfileAndGeneratePlan: (profile: FitnessProfile, catalog?: Workout[]) => void;
   logWorkout: (entry: Omit<WorkoutLog, "id" | "loggedAt"> & { loggedAt?: string }) => void;
   deleteWorkoutLog: (id: string) => void;
 
@@ -91,8 +92,8 @@ export const useWellnessStore = create<WellnessState>()(
       fitnessPlans: [],
       workoutLogs: [],
 
-      setFitnessProfileAndGeneratePlan: (profile) => {
-        const plan = generateFitnessPlan(profile, WORKOUT_CATALOG);
+      setFitnessProfileAndGeneratePlan: (profile, catalog) => {
+        const plan = generateFitnessPlan(profile, catalog ?? WORKOUT_CATALOG);
         set((state) => ({
           fitnessProfile: profile,
           fitnessPlans: [...state.fitnessPlans.map((p) => ({ ...p, isActive: false })), plan],

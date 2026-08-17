@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card } from "@/components/wellness/ui/Card";
 import { useWellnessStore } from "@/lib/store";
+import { useEnsureLiveContent, useLiveContentStore } from "@/lib/wellness/useLiveContent";
 import type { ActivityType, ExperienceLevel, FitnessProfile, GoalType, WorkoutLocation } from "@/lib/types";
 
 const GOAL_OPTIONS: { value: GoalType; label: string }[] = [
@@ -43,6 +44,8 @@ function toggleInArray<T>(arr: T[], value: T): T[] {
 
 export function GoalWizard({ existing, onSaved }: { existing: FitnessProfile | null; onSaved?: () => void }) {
   const setFitnessProfileAndGeneratePlan = useWellnessStore((s) => s.setFitnessProfileAndGeneratePlan);
+  useEnsureLiveContent();
+  const liveWorkouts = useLiveContentStore((s) => s.workouts);
 
   const [goalType, setGoalType] = useState<GoalType>(existing?.goalType ?? "general_activity");
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>(existing?.experienceLevel ?? "beginner");
@@ -61,7 +64,7 @@ export function GoalWizard({ existing, onSaved }: { existing: FitnessProfile | n
       location,
       preference,
       updatedAt: new Date().toISOString(),
-    });
+    }, liveWorkouts);
     onSaved?.();
   }
 

@@ -87,7 +87,7 @@ function AdminReturnsContent() {
 }
 
 export default function AdminReturnsPage() {
-  const { checking } = useAdminGuard();
+  const { checking } = useAdminGuard("returns");
   if (checking) return <DashboardSkeleton />;
   return <AdminReturnsContent />;
 }

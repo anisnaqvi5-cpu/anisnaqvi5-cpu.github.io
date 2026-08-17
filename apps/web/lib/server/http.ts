@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { OrderError } from "@/lib/server/orderService";
+import { OrderError } from "@/lib/server/errors";
+import { AdminAuthError } from "@/lib/server/adminAuth";
 
 export function getCustomerId(req: Request): string {
   const id = req.headers.get("x-customer-id");
@@ -27,6 +28,9 @@ function statusForCode(code: string): number {
 }
 
 export function errorResponse(err: unknown) {
+  if (err instanceof AdminAuthError) {
+    return NextResponse.json({ error: "forbidden", message: err.message }, { status: err.status });
+  }
   if (err instanceof OrderError) {
     return NextResponse.json({ error: err.code, message: err.message }, { status: statusForCode(err.code) });
   }

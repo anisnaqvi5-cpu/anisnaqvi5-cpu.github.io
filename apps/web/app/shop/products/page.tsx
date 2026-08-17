@@ -6,12 +6,15 @@ import { ClientOnly } from "@/components/wellness/ui/ClientOnly";
 import { DashboardSkeleton } from "@/components/wellness/ui/DashboardSkeleton";
 import { EmptyState } from "@/components/wellness/ui/EmptyState";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { CATEGORIES, PRODUCTS } from "@/lib/ecommerce/catalog";
+import { useCatalogStore, useEnsureCatalog } from "@/lib/useCatalogStore";
 import { useWellnessStore } from "@/lib/store";
 
 type SortKey = "popularity" | "price_asc" | "price_desc";
 
 function ProductListingContent() {
+  useEnsureCatalog();
+  const categories = useCatalogStore((s) => s.categories);
+  const products = useCatalogStore((s) => s.products);
   const locale = useWellnessStore((s) => s.locale);
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") ?? "all";
@@ -23,8 +26,8 @@ function ProductListingContent() {
   const [sort, setSort] = useState<SortKey>("popularity");
 
   const results = useMemo(() => {
-    let list = PRODUCTS.filter((p) => {
-      const cat = CATEGORIES.find((c) => c.id === p.categoryId);
+    let list = products.filter((p) => {
+      const cat = categories.find((c) => c.id === p.categoryId);
       if (category !== "all" && cat?.slug !== category) return false;
       if (personalizableOnly && !p.isPersonalizable) return false;
       if (query.trim()) {
@@ -41,7 +44,7 @@ function ProductListingContent() {
       return b.reviewCount - a.reviewCount;
     });
     return list;
-  }, [category, personalizableOnly, query, sort]);
+  }, [products, categories, category, personalizableOnly, query, sort]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -64,7 +67,7 @@ function ProductListingContent() {
           >
             All
           </button>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <button
               key={c.id}
               onClick={() => setCategory(c.slug)}

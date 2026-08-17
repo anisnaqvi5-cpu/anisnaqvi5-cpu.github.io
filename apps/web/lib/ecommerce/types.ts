@@ -178,6 +178,8 @@ export interface ReturnRequest {
   updatedAt: string;
 }
 
+export type ReviewStatus = "pending" | "approved" | "rejected";
+
 export interface Review {
   id: string;
   productId: string;
@@ -185,6 +187,7 @@ export interface Review {
   customerId: string;
   rating: 1 | 2 | 3 | 4 | 5;
   comment: string;
+  status: ReviewStatus;
   createdAt: string;
 }
 
@@ -193,4 +196,76 @@ export interface Coupon {
   type: "percentage" | "fixed_amount" | "free_shipping";
   value: number; // percentage points, or cents for fixed_amount
   minOrderCents?: number;
+  isActive: boolean;
+}
+
+// ===========================================================================
+// Admin domain — RBAC, audit log, and the content the Admin Dashboard manages
+// beyond orders/reviews/coupons (which already exist above). See
+// ADMIN_DASHBOARD.md for the full permission matrix and security model.
+// ===========================================================================
+
+export type AdminRole = "super_admin" | "product_manager" | "order_manager" | "content_manager";
+
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string; // scrypt, see lib/server/passwordHash.ts — never plaintext
+  role: AdminRole;
+  isActive: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface AdminSessionRecord {
+  token: string; // random, opaque — this is the ONLY thing the cookie holds
+  adminUserId: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  adminUserId: string;
+  adminEmail: string;
+  adminRole: AdminRole;
+  action: string; // "product.create", "order.refund", "admin_user.role_change", ...
+  entityType: string;
+  entityId: string;
+  note?: string;
+  createdAt: string;
+}
+
+export interface FontRecord {
+  id: string;
+  name: string;
+  cssFamily: string;
+  isActive: boolean;
+}
+
+export interface QuoteRecord {
+  id: string;
+  text: Record<Locale, string>;
+  category: "gratitude" | "motivational";
+  isActive: boolean;
+}
+
+export interface NotificationBroadcast {
+  id: string;
+  title: string;
+  body: string;
+  audience: "all_customers" | "recent_customers";
+  sentBy: string; // admin email
+  createdAt: string;
+  recipientCountEstimate: number;
+}
+
+export interface CustomerSummary {
+  customerId: string;
+  orderCount: number;
+  totalSpentCents: number;
+  firstOrderAt: string;
+  lastOrderAt: string;
+  isReturning: boolean; // orderCount > 1
 }

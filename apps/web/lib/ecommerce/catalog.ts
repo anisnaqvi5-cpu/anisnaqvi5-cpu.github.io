@@ -131,32 +131,15 @@ export const PRODUCTS: Product[] = [
 ];
 
 export const COUPONS: Coupon[] = [
-  { code: "WELCOME10", type: "percentage", value: 10 },
-  { code: "FREESHIP", type: "free_shipping", value: 0 },
-  { code: "SAVE5", type: "fixed_amount", value: 500, minOrderCents: 3000 },
+  { code: "WELCOME10", type: "percentage", value: 10, isActive: true },
+  { code: "FREESHIP", type: "free_shipping", value: 0, isActive: true },
+  { code: "SAVE5", type: "fixed_amount", value: 500, minOrderCents: 3000, isActive: true },
 ];
 
 export const SHIPPING_FEE_CENTS = 500;
 
-export function findProduct(productId: string): Product | undefined {
-  return PRODUCTS.find((p) => p.id === productId);
-}
-
-export function findVariant(productId: string, variantId: string): { product: Product; variant: Product["variants"][number] } | undefined {
-  const product = findProduct(productId);
-  const variant = product?.variants.find((v) => v.id === variantId);
-  if (!product || !variant) return undefined;
-  return { product, variant };
-}
-
-export function findProductByVariantId(variantId: string): { product: Product; variant: Product["variants"][number] } | undefined {
-  for (const product of PRODUCTS) {
-    const variant = product.variants.find((v) => v.id === variantId);
-    if (variant) return { product, variant };
-  }
-  return undefined;
-}
-
-export function findCoupon(code: string): Coupon | undefined {
-  return COUPONS.find((c) => c.code.toUpperCase() === code.toUpperCase());
-}
+// NOTE: the find* helpers that used to live here now live in
+// lib/server/catalogService.ts, reading the LIVE (admin-editable) catalog
+// instead of this static seed. This file only exports the initial seed data
+// (used once by lib/server/db.ts on first run) and the client-side fallback
+// (lib/useCatalogStore.ts) — nothing else should import find* from here.

@@ -8,9 +8,11 @@ import { WeeklyPlanView } from "@/components/wellness/Fitness/WeeklyPlanView";
 import { LogWorkoutForm } from "@/components/wellness/Fitness/LogWorkoutForm";
 import { WorkoutHistory } from "@/components/wellness/Fitness/WorkoutHistory";
 import { getActivePlan, useWellnessStore } from "@/lib/store";
-import { WORKOUT_CATALOG } from "@/lib/wellness/seedData";
+import { useEnsureLiveContent, useLiveContentStore } from "@/lib/wellness/useLiveContent";
 
 function FitnessContent() {
+  useEnsureLiveContent();
+  const liveWorkouts = useLiveContentStore((s) => s.workouts);
   const fitnessProfile = useWellnessStore((s) => s.fitnessProfile);
   const fitnessPlans = useWellnessStore((s) => s.fitnessPlans);
   const activePlan = getActivePlan({ fitnessPlans });
@@ -36,7 +38,7 @@ function FitnessContent() {
       {editing ? (
         <GoalWizard existing={fitnessProfile} onSaved={() => setEditing(false)} />
       ) : (
-        activePlan && <WeeklyPlanView plan={activePlan} catalog={WORKOUT_CATALOG} />
+        activePlan && <WeeklyPlanView plan={activePlan} catalog={liveWorkouts} />
       )}
 
       {fitnessProfile && !editing && (

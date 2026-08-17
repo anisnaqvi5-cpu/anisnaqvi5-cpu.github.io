@@ -23,7 +23,7 @@ const TABS: { value: OrderStatus | "all"; label: string }[] = [
 ];
 
 export default function AdminOrdersPage() {
-  const { checking } = useAdminGuard();
+  const { checking } = useAdminGuard("orders");
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [tab, setTab] = useState<OrderStatus | "all">("all");
   const [loading, setLoading] = useState(true);

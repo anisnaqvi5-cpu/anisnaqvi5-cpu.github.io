@@ -167,7 +167,7 @@ function AdminOrderDetailContent() {
 }
 
 export default function AdminOrderDetailPage() {
-  const { checking } = useAdminGuard();
+  const { checking } = useAdminGuard("orders");
   if (checking) return <DashboardSkeleton />;
   return <AdminOrderDetailContent />;
 }

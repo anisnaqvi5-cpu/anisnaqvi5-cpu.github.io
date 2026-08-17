@@ -6,8 +6,8 @@ import { Plus, X } from "lucide-react";
 import { Card } from "@/components/wellness/ui/Card";
 import { useWellnessStore } from "@/lib/store";
 import type { Mood } from "@/lib/types";
-import { todaysPrompt } from "@/lib/wellness/seedData";
 import type { AppLocale } from "@/lib/wellness/seedData";
+import { todaysLivePrompt, useEnsureLiveContent, useLiveContentStore } from "@/lib/wellness/useLiveContent";
 
 const REFLECT_FALLBACK: Record<AppLocale, string> = {
   en: "Reflect on this day",
@@ -23,6 +23,9 @@ const MOOD_OPTIONS: { value: Mood; emoji: string; label: string }[] = [
 ];
 
 export function EntryComposer({ date }: { date: string }) {
+  useEnsureLiveContent();
+  const promptsEn = useLiveContentStore((s) => s.promptsEn);
+  const promptsAr = useLiveContentStore((s) => s.promptsAr);
   const locale = useWellnessStore((s) => s.locale);
   const entries = useWellnessStore((s) => s.gratitudeEntries);
   const upsertEntry = useWellnessStore((s) => s.upsertGratitudeEntry);
@@ -35,7 +38,7 @@ export function EntryComposer({ date }: { date: string }) {
   const [mood, setMood] = useState<Mood>(existing?.mood ?? "good");
   const [saved, setSaved] = useState(false);
 
-  const prompt = existing?.prompt ?? (isToday ? todaysPrompt(locale) : REFLECT_FALLBACK[locale]);
+  const prompt = existing?.prompt ?? (isToday ? todaysLivePrompt(promptsEn, promptsAr, locale) : REFLECT_FALLBACK[locale]);
 
   useEffect(() => {
     setItems(existing?.gratitudeItems ?? []);

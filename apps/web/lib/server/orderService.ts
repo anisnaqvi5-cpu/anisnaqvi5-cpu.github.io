@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { findCoupon, findProductByVariantId, findVariant, SHIPPING_FEE_CENTS } from "@/lib/ecommerce/catalog";
+import { findCoupon, findProductByVariantId, findVariant, SHIPPING_FEE_CENTS } from "@/lib/server/catalogService";
 import type {
   Address,
   Coupon,
@@ -12,17 +12,14 @@ import type {
   ReturnRequest,
 } from "@/lib/ecommerce/types";
 import { withDb, readDb } from "@/lib/server/db";
+import { OrderError } from "@/lib/server/errors";
 import { getPaymentProvider, type NormalizedWebhookEvent } from "@/lib/server/paymentProvider";
 
 function now() {
   return new Date().toISOString();
 }
 
-export class OrderError extends Error {
-  constructor(public code: string, message: string) {
-    super(message);
-  }
-}
+export { OrderError };
 
 function computeDiscount(subtotalCents: number, coupon: Coupon | undefined): { discountCents: number; shippingFeeCents: number } {
   if (!coupon) return { discountCents: 0, shippingFeeCents: SHIPPING_FEE_CENTS };
@@ -286,14 +283,52 @@ export async function createReview(params: { productId: string; orderItemId: str
     if (order.status !== "delivered") throw new OrderError("invalid_review", "You can review a product once your order is delivered.");
     if (db.reviews.some((r) => r.orderItemId === params.orderItemId)) throw new OrderError("already_reviewed", "You already reviewed this order item.");
 
-    const review: Review = { id: crypto.randomUUID(), createdAt: now(), ...params };
+    // Pending until a content_manager/admin approves — keeps low-quality or
+    // abusive text off the public product page automatically.
+    const review: Review = { id: crypto.randomUUID(), createdAt: now(), status: "pending", ...params };
     db.reviews.push(review);
     return review;
   });
 }
 
+/** Public product page — approved reviews only. */
 export function listReviews(productId: string): Review[] {
-  return readDb((db) => db.reviews.filter((r) => r.productId === productId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+  return readDb((db) =>
+    db.reviews.filter((r) => r.productId === productId && r.status === "approved").sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  );
+}
+
+/** Admin (content_manager) moderation queue — every status. */
+export function listAllReviews(): Review[] {
+  return readDb((db) => [...db.reviews].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+}
+
+export async function moderateReview(reviewId: string, status: "approved" | "rejected"): Promise<Review> {
+  const updated = await withDb((db) => {
+    const review = db.reviews.find((r) => r.id === reviewId);
+    if (!review) throw new OrderError("not_found", "Review not found.");
+    review.status = status;
+    return review;
+  });
+
+  // Recompute the product's public rating from approved reviews only —
+  // pending/rejected reviews never influence what shoppers see.
+  await withDb((db) => {
+    const productReviews = db.reviews.filter((r) => r.productId === updated.productId && r.status === "approved");
+    const product = db.products.find((p) => p.id === updated.productId);
+    if (product) {
+      product.reviewCount = productReviews.length;
+      product.avgRating = productReviews.length ? Math.round((productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length) * 10) / 10 : 0;
+    }
+  });
+
+  return updated;
+}
+
+export async function deleteReview(reviewId: string): Promise<void> {
+  await withDb((db) => {
+    db.reviews = db.reviews.filter((r) => r.id !== reviewId);
+  });
 }
 
 // ---- Admin -------------------------------------------------------------

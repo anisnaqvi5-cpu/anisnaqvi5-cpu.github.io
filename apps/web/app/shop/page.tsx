@@ -7,10 +7,13 @@ import { useRouter } from "next/navigation";
 import { ClientOnly } from "@/components/wellness/ui/ClientOnly";
 import { DashboardSkeleton } from "@/components/wellness/ui/DashboardSkeleton";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { CATEGORIES, PRODUCTS } from "@/lib/ecommerce/catalog";
+import { useCatalogStore, useEnsureCatalog } from "@/lib/useCatalogStore";
 import { useWellnessStore } from "@/lib/store";
 
 function ShopHomeContent() {
+  useEnsureCatalog();
+  const categories = useCatalogStore((s) => s.categories);
+  const products = useCatalogStore((s) => s.products);
   const locale = useWellnessStore((s) => s.locale);
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -45,7 +48,7 @@ function ShopHomeContent() {
       <div>
         <h2 className="mb-3 font-heading text-lg text-foreground">Shop by Category</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/shop/products?category=${cat.slug}`}
@@ -66,7 +69,7 @@ function ShopHomeContent() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {PRODUCTS.slice(0, 6).map((p) => (
+          {products.slice(0, 6).map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>

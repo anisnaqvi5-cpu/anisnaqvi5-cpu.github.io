@@ -9,7 +9,8 @@ import { QuickLogRow } from "@/components/wellness/Dashboard/QuickLogRow";
 import { TodayPlanCard } from "@/components/wellness/Dashboard/TodayPlanCard";
 import { getActivePlan, useWellnessStore } from "@/lib/store";
 import { computeDailyGoals } from "@/lib/wellness/dailyGoals";
-import { WORKOUT_CATALOG, type AppLocale } from "@/lib/wellness/seedData";
+import { type AppLocale } from "@/lib/wellness/seedData";
+import { useEnsureLiveContent, useLiveContentStore } from "@/lib/wellness/useLiveContent";
 
 const GREETINGS: Record<AppLocale, [string, string, string]> = {
   en: ["Good morning", "Good afternoon", "Good evening"],
@@ -25,6 +26,8 @@ function greeting(locale: AppLocale): string {
 }
 
 function DashboardContent() {
+  useEnsureLiveContent();
+  const liveWorkouts = useLiveContentStore((s) => s.workouts);
   const locale = useWellnessStore((s) => s.locale);
   const hydrationGoal = useWellnessStore((s) => s.hydrationGoal);
   const hydrationLogs = useWellnessStore((s) => s.hydrationLogs);
@@ -54,7 +57,7 @@ function DashboardContent() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <MiniHydrationWidget />
-        <TodayPlanCard plan={activePlan} catalog={WORKOUT_CATALOG} />
+        <TodayPlanCard plan={activePlan} catalog={liveWorkouts} />
       </div>
 
       <DailyGoalsChecklist goals={goals} />

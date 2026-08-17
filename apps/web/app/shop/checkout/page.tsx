@@ -7,13 +7,16 @@ import { DashboardSkeleton } from "@/components/wellness/ui/DashboardSkeleton";
 import { Card } from "@/components/wellness/ui/Card";
 import { MockPaymentForm } from "@/components/shop/MockPaymentForm";
 import { StripePaymentForm } from "@/components/shop/StripePaymentForm";
-import { findVariant } from "@/lib/ecommerce/catalog";
+import { findVariantInList } from "@/lib/ecommerce/lookup";
 import { formatCents } from "@/lib/ecommerce/format";
 import { useShopStore, getDesign } from "@/lib/shopStore";
 import { shopApi } from "@/lib/shopApi";
+import { useCatalogStore, useEnsureCatalog } from "@/lib/useCatalogStore";
 import type { Address, OrderItemInput, OrderRecord } from "@/lib/ecommerce/types";
 
 function CheckoutContent() {
+  useEnsureCatalog();
+  const products = useCatalogStore((s) => s.products);
   const router = useRouter();
   const cartItems = useShopStore((s) => s.cartItems);
   const designs = useShopStore((s) => s.designs);
@@ -37,7 +40,7 @@ function CheckoutContent() {
 
   const items: OrderItemInput[] = [];
   for (const c of cartItems) {
-    const found = findVariant(c.productId, c.variantId);
+    const found = findVariantInList(products, c.productId, c.variantId);
     if (!found) continue;
     const design = getDesign(designs, c.designId);
     items.push({ variantId: c.variantId, quantity: c.quantity, design: design ? { productId: c.productId, elements: design.elements } : undefined });
