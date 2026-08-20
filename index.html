@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اعراب گزاری عربی عبارت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --card: #ffffff;
+    --ink: #26221c;
+    --muted: #6b6357;
+    --accent: #0f6b5c;
+    --accent-ink: #ffffff;
+    --border: #e3ddce;
+    --mono-bg: #f1efe6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --card: #221e17;
+      --ink: #f1ece0;
+      --muted: #b5ab97;
+      --accent: #35b39b;
+      --accent-ink: #0d1512;
+      --border: #3a3427;
+      --mono-bg: #1b1811;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Naskh Arabic", "Amiri", "Traditional Arabic", serif;
+    padding: 32px 16px 64px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 28px; }
+  h1 {
+    font-size: 2rem;
+    margin: 0 0 8px;
+    font-family: "Amiri", serif;
+    font-weight: 700;
+  }
+  .sub { color: var(--muted); font-size: 1.05rem; margin: 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+  textarea {
+    width: 100%;
+    min-height: 140px;
+    resize: vertical;
+    background: var(--mono-bg);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 1.3rem;
+    line-height: 2.1;
+    font-family: "Amiri", "Noto Naskh Arabic", serif;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  button {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 11px 20px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .primary { background: var(--accent); color: var(--accent-ink); }
+  .primary:hover { opacity: 0.9; }
+  .ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .ghost:hover { background: var(--mono-bg); }
+  .out-label { display: flex; justify-content: space-between; align-items: center; }
+  .hint { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  .copied { color: var(--accent); font-weight: 600; font-size: 0.9rem; visibility: hidden; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>اعراب گزاری عربی عبارت</h1>
+    <p class="sub">عربی عبارت درج کریں، پھر تیار شدہ پرامپٹ کو کاپی کر کے کسی بھی AI چیٹ (مثلاً Claude یا ChatGPT) میں پیسٹ کریں تاکہ مکمل اعراب کے ساتھ متن حاصل ہو۔</p>
+  </header>
+
+  <div class="card">
+    <label for="input">عربی عبارت (بغیر اعراب)</label>
+    <textarea id="input" placeholder="هنا يتم إدخال النص العربي..."></textarea>
+    <div class="row">
+      <button class="primary" id="generate">پرامپٹ تیار کریں</button>
+      <button class="ghost" id="clear">صاف کریں</button>
+    </div>
+  </div>
+
+  <div class="card" id="outputCard" style="display:none;">
+    <div class="out-label">
+      <label for="output">تیار شدہ پرامپٹ</label>
+      <span class="copied" id="copiedMsg">کاپی ہو گیا ✓</span>
+    </div>
+    <textarea id="output" readonly></textarea>
+    <div class="row">
+      <button class="primary" id="copy">پرامپٹ کاپی کریں</button>
+    </div>
+    <p class="hint">اس پورے متن کو کاپی کر کے Claude، ChatGPT یا کسی بھی AI ماڈل میں پیسٹ کر دیں — جواب میں آپ کو مکمل اعراب کے ساتھ عبارت ملے گی۔</p>
+  </div>
+
+  <footer>Noor Saba</footer>
+</div>
+
+<script>
+function buildPrompt(text) {
+  return "آپ ایک ماہر عربی زبان دان اور نحوی (Arabic grammarian) ہیں۔ ذیل میں دی گئی عربی عبارت پر مکمل اور درست اعراب (تشکیل/harakat: فتحہ، ضمہ، کسرہ، سکون، شدہ، تنوین وغیرہ) لگائیں، بشمول ہر کلمے کے آخری حرف پر اعرابِ اِعرابی (case ending) — یعنی نحوی اعتبار سے درست حرکت۔\n\n" +
+    "ہدایات:\n" +
+    "1. اصل الفاظ اور ان کی ترتیب کو بالکل نہ بدلیں، صرف اعراب/حرکات لگائیں۔\n" +
+    "2. کوئی حرف، لفظ، یا جملہ حذف یا اضافہ نہ کریں۔\n" +
+    "3. کلاسیکی عربی گرامر (نحو و صرف) کے قواعد کے مطابق درست اعراب لگائیں۔\n" +
+    "4. جواب میں صرف مکمل معرب عبارت دیں، کوئی وضاحت، ترجمہ یا اضافی متن شامل نہ کریں۔\n\n" +
+    "عبارت:\n" + text;
+}
+
+const input = document.getElementById('input');
+const output = document.getElementById('output');
+const outputCard = document.getElementById('outputCard');
+const copiedMsg = document.getElementById('copiedMsg');
+
+document.getElementById('generate').addEventListener('click', () => {
+  const text = input.value.trim();
+  if (!text) {
+    input.focus();
+    return;
+  }
+  output.value = buildPrompt(text);
+  outputCard.style.display = 'block';
+  outputCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+document.getElementById('clear').addEventListener('click', () => {
+  input.value = '';
+  output.value = '';
+  outputCard.style.display = 'none';
+  input.focus();
+});
+
+document.getElementById('copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(output.value);
+  } catch (e) {
+    output.select();
+    document.execCommand('copy');
+  }
+  copiedMsg.style.visibility = 'visible';
+  setTimeout(() => { copiedMsg.style.visibility = 'hidden'; }, 1800);
+});
+</script>
+</body>
+</html>
